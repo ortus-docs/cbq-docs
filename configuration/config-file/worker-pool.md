@@ -62,6 +62,22 @@ newWorkerPool( "default" )
     // uses `default` queue
 ```
 
+Some Providers allow for working a priority of queues, such as the `DBProvider`.  In these cases, you can pass an array of queues, in priority order, using the asterisk (`*`) as a wildcard character.
+
+```cfscript
+newWorkerPool( "premium-only" )
+    .forConnection( "db" )
+    .onQueue( "premium" );
+    
+newWorkerPool( "default" )
+    .forConnection( "db" )
+    .onQueue( [ "priority", "*" ] );
+```
+
+{% hint style="danger" %}
+**Throws:** `cbq.WorkerPool.MultipleQueuesNotSupported`
+{% endhint %}
+
 #### setQueue
 
 Alias for [onQueue](worker-pool.md#onqueues).

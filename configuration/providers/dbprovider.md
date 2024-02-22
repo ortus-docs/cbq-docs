@@ -6,6 +6,12 @@ This provider is **durable**.
 (Pending jobs are persisted. If there are server issues, the jobs will be worked when the issues are resolved.  Multiple different servers can dispatch to this Queue Connection and multiple different Worker Pools can work these jobs.)
 {% endhint %}
 
+{% hint style="success" %}
+This provider **supports multiple queues**.
+
+(An array of prioritized queues can be assigned to Worker Pools worked by this provider.)
+{% endhint %}
+
 You may use a database as the backing engine for your Queue Connection using the DBProvider.  All database grammars that are [supported by qb](https://qb.ortusbooks.com/v/9.0.0/installation-and-usage) are supported.
 
 ### Configuration

@@ -77,9 +77,8 @@ Prefer using `provider:` injections or inline `getInstance` calls for logic in y
 
 A job can define several execution properties on the job itself.  If defined, these values override the module, connection, or worker defaults.  It can still be overridden using the job methods when creating a job.
 
-```cfscript
-component extends="cbq.models.Jobs.AbstractJob" {
-
+<pre class="language-cfscript"><code class="lang-cfscript"><strong>component extends="cbq.models.Jobs.AbstractJob" {
+</strong>
     // Name of the connection to dispatch this job on.
     variables.connection = "db";
     
@@ -97,5 +96,45 @@ component extends="cbq.models.Jobs.AbstractJob" {
     variables.maxAttempts = 9;
 
 }
-```
+</code></pre>
 
+## Lifecycle Methods
+
+A Job can define a `before` or `after` method that will be called as part of the Job lifecycle.
+
+<pre class="language-cfscript"><code class="lang-cfscript"><strong>component
+</strong>    name="SendWelcomeEmailJob"
+    extends="cbq.models.Jobs.AbstractJob"
+{
+
+    property name="mailService" inject="provider:MailService@cbmailservices";
+    
+    property name="email";
+    property name="greeting";
+    
+    function handle() {
+        variables.mailService.newMail( 
+            to = variables.email,
+	    from = "noreply@example.com",
+	    subject = "Welcome!",
+            type = "html",
+	    bodyTokens = { 
+		"greeting": variables.greeting
+		"link": getInstance( "coldbox:requestContext" )
+		    .buildLink( "home" )
+	    }
+        )
+        .setView( "_emails/welcome" )
+        .send();
+    }
+    
+    function before() {
+        log.debug( "About to execute SendWelcomeEmailJob" );
+    }
+    
+    function after() {
+        log.debug( "Finished executing SendWelcomeEmailJob" );
+    }
+
+}
+</code></pre>

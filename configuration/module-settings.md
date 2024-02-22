@@ -42,7 +42,10 @@ settings = {
         "tableName" : "cbq_failed_jobs",
 	"datasource" : "", // `datasource` can also be a struct.
 	"queryOptions" : {} // The sibling `datasource` property overrides any defined datasource in `queryOptions`.
-    }
+    },
+    
+    // Flag to allow restricting Job interceptor execution using a `jobPattern` annotation.
+    "registerJobInterceptorRestrictionAspect" : false
 };
 ```
 
@@ -110,3 +113,6 @@ The datasource to use to interact with the failed jobs table.  If no datasource 
 
 A struct of query options to pass to the `queryExecute` call when interacting with the failed jobs table.  If a `datasource` is defined above, it will override any `datasource` key inside the `queryOptions`.
 
+### registerJobInterceptorRestrictionAspect
+
+Flag to allow [restricting Job interceptor execution](../interceptors.md#jobpattern-annotation) using a `jobPattern` annotation.

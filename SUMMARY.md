@@ -32,6 +32,7 @@
 ***
 
 * [cbq Model](cbq-model.md)
+* [Interceptors](interceptors.md)
 
 ## Other
 

@@ -1,5 +1,13 @@
 # What's New?
 
+## v2.1.0
+
+Add back ability to [work on multiple queues](configuration/config-file/worker-pool.md#onqueue) on a per-Provider basis. Currently only the `DBProvider` supports it.
+
+Add support for `before` and `after` [lifecycle methods](jobs/defining-a-job.md#lifecycle-methods) on a Job instance.
+
+Add ability to [restrict interceptor execution ](interceptors.md#jobpattern-annotation)with a `jobPattern` annotation.  (This is similar to the `eventPattern` annotation [provided by ColdBox](https://coldbox.ortusbooks.com/the-basics/interceptors/restricting-execution).)
+
 ## v2.0.5
 
 **DBProvider**: Disable `forceRun` because it is causing ColdBox Futures to lose mappings.
