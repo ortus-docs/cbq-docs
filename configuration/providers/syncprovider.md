@@ -12,4 +12,8 @@ This provider **does not support multiple queues**.
 (Only a single queue can be provided to a Worker Pool instance. Additional queues to be worked should be registered as separate Worker Pool instances.)
 {% endhint %}
 
+{% hint style="danger" %}
+Jobs dispatched from inside a Sync job are executed immediately and recursively. This means a child job failing will cause any parent jobs to also fail.
+{% endhint %}
+
 The SyncProvider runs any jobs dispatched during a request in the same request synchronously. This can be especially useful in development when debugging jobs.  If you job would throw an exception, you will see it with any chosen error handler and tools you use to debug local exceptions.
