@@ -1,5 +1,9 @@
 # What's New?
 
+## v5.0.1
+
+Added the `exception` to `afterJobException` and `afterJobFailed` lifecycle method arguments.
+
 ## v5.0.0
 
 ### Breaking Change
