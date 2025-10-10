@@ -1,5 +1,21 @@
 # What's New?
 
+## v5.0.0
+
+### Breaking Change
+
+The full `AbstractJob` instance is now passed in to the `push` method as `job`, rather than just the serialized version as `payload`.  All built-in Providers have been updated to handle this change.  Custom Providers will need to update to the new method signature.
+
+See the [Upgrade Guide](upgrade-guide.md#v4-to-v5) for more information.
+
+### Other Changes
+
+* Allow jobs to be fully [cancelled](jobs/defining-a-job.md#manual) manually from inside the job, preventing further retries.
+* Added an `afterJobExpection` Provider-level event method to let providers act on any exception, not just the exception that marked the Job as fully failed.
+* A `providerContext` field is now available on `Job` instances.  This field should only be used in Providers.  It can be used to store any value the Provider needs when interacting with Jobs in later lifecycle methods.
+* When processing an `unload` event, cbq will call a `shutdown` method on all `Connection` instances and `WorkerPool` instances giving Providers a chance to cleanup any necessary code.
+* cbq will now start processing its configuration only after all modules have loaded (`afterAspectsLoad`).
+
 ## v4.0.0
 
 ### Breaking Change

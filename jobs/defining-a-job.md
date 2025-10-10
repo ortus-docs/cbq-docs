@@ -138,3 +138,57 @@ A Job can define a `before` or `after` method that will be called as part of the
 
 }
 </code></pre>
+
+## Manual Control
+
+### release
+
+A job can be manually released from inside a Job.  Releasing a Job sends it back to the queue and increments the attempt count.  An optional delay (in seconds) can be passed to `release`.
+
+```cfscript
+component
+    name="ProcessFTPDropJob"
+    extends="cbq.models.Jobs.AbstractJob"
+{
+    
+    function handle() {
+        if ( fileIsNotAvailable() ) {
+            this.release( 60 * 60 ); // try again in 1 hour
+        } else {
+            processFile();
+        }
+    }
+
+}
+```
+
+### cancel
+
+A job can be cancelled from inside a Job.  Cancelling a Job fails the Job and skips any future retries.  It accepts an optional error message as its argument.
+
+```cfscript
+component
+    name="ProcessFTPDropJob"
+    extends="cbq.models.Jobs.AbstractJob"
+{
+    
+    function handle() {
+        if ( fileIsNotAvailable() ) {
+            this.release( 60 * 60 ); // try again in 1 hour
+        } else if ( fileIsCorrupted() ) {
+            this.cancel( "File is corrupted" );
+        } else {
+            processFile();
+        }
+    }
+
+}
+```
+
+## ProviderContext
+
+One field on a job is provided exclusively for Providers — the `providerContext` field.  Providers can use this field to store any data necessary on the `Job` instance itself.  This can be no data, a struct of metadata, or an underlying Java class.  This makes it easier for the provider to get that data back in the Provider lifecycle methods later.
+
+{% hint style="danger" %}
+**NOTE:** Do not use this field from inside your Job itself. It is meant only to be set and retrieved from the Provider itself.  Using this field inside your Job may couple your Job to a specific Provider.
+{% endhint %}

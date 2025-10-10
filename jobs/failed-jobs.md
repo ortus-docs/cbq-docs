@@ -8,6 +8,36 @@ An important distinction to make is between failed Job attempts and failed Jobs.
 
 Failed Job attempts are logged to LogBox.  You will see the exception as well as the serialized Job memento in the `extraInfo`.
 
+## Provider Methods
+
+Providers have an opportunity to respond to failed Job events as follows:
+
+### afterJobException
+
+This event method is fired for every **Job Attempt** failure. The data includes the Job `id`, the `job` instance, the Worker `pool` instance, and the `exception`.
+
+```cfscript
+private void function afterJobException(
+    required any id,
+    AbstractJob job,
+    WorkerPool pool,
+    any exception
+) { /* ... */ }
+```
+
+### afterJobFailed
+
+This event method is fired when **Job** is marked as failed — when the Job has failed all attempts up to the configured `maxAttempts` or has been cancelled. The data includes the Job `id`, the `job` instance, the Worker `pool` instance, and the `exception`.
+
+```cfscript
+private void function afterJobException(
+    required any id,
+    AbstractJob job,
+    WorkerPool pool,
+    any exception
+) { /* ... */ }
+```
+
 ## Interceptors
 
 ### onCBQJobException
