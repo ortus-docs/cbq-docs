@@ -1,5 +1,9 @@
 # What's New?
 
+## v5.0.2
+
+Fixed a missing reference to `config` when unloading cbq.
+
 ## v5.0.1
 
 Added the `exception` to `afterJobException` and `afterJobFailed` lifecycle method arguments.
