@@ -1,5 +1,9 @@
 # What's New?
 
+## v5.0.4
+
+Add `shutdown` pass through method to the `QueueProvider`.
+
 ## v5.0.3
 
 Fix shutdown on unload logic,
