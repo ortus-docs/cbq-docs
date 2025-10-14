@@ -1,5 +1,9 @@
 # What's New?
 
+## v5.0.3
+
+Fix shutdown on unload logic,
+
 ## v5.0.2
 
 Fixed a missing reference to `config` when unloading cbq.
