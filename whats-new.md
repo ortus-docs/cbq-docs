@@ -1,5 +1,13 @@
 # What's New?
 
+## v5.0.7
+
+Update `release` to use the new `push` method signature.
+
+## v5.0.6
+
+Do not return anything from the `shutdown` method.
+
 ## v5.0.5
 
 Make `shutdown` methods public.
