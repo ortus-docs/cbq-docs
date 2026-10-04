@@ -1,7 +1,7 @@
 # Queue Observability
 
-{% hint style="warning" %}
-These hooks are unreleased additions from [cbq PR #39](https://github.com/coldbox-modules/cbq/pull/39). They are not available in cbq 5.x. Use a release containing that change before installing an interceptor that depends on them.
+{% hint style="info" %}
+These hooks were introduced in [cbq 7.0.1](https://github.com/coldbox-modules/cbq/releases/tag/v7.0.1). They are not available in cbq 5.x.
 {% endhint %}
 
 cbq exposes observation points for publishing and individual processing attempts. They let an application record queue timings, correlate retries, and establish tracing context on the actual worker. cbq does not start a tracing client or persist trace headers automatically; those responsibilities belong to your integration.
@@ -15,7 +15,7 @@ cbq exposes observation points for publishing and individual processing attempts
 | `onCBQJobPublished` | After the provider's push returns successfully | `job`, `connection`, nullable `exception` |
 | `onCBQJobPublishException` | When the provider's push throws | `job`, `connection`, original `exception` |
 
-Both single dispatch and bulk dispatch announce these result hooks. Bulk dispatch announces a result for each job in the attempted chunk, including the final partial chunk. If a chunk throws, cbq rethrows the original provider exception. Earlier chunks can already have been published, and the result hook does not guarantee atomic publication or durable broker acknowledgement beyond the provider's own contract.
+Both single dispatch and bulk dispatch announce these result hooks. Bulk dispatch announces a result for each job in a complete attempted chunk. In 7.0.1, the final partial chunk bypasses the result hooks; use the default `batchSize = 1` when every publication must be observed. [cbq PR #40](https://github.com/coldbox-modules/cbq/pull/40) adds result hooks for that final partial chunk; that fix is not included in 7.0.1. If a chunk throws, cbq rethrows the original provider exception. Earlier chunks can already have been published, and the result hook does not guarantee atomic publication or durable broker acknowledgement beyond the provider's own contract.
 
 With `SyncProvider`, job execution happens inside the push. Its publish-result hook therefore follows synchronous execution; it does not represent acceptance by an external queue.
 

@@ -24,9 +24,9 @@ This is called when encountering an exception when handling a Job.
 
 This is called when a Job is considered failed, after exhausting its `maxAttempts`.
 
-## Queue observation hooks (unreleased)
+## Queue observation hooks (7.0.1+)
 
-The upcoming observation hooks are `onCBQJobPublished`, `onCBQJobPublishException`, `onCBQJobAttemptScheduled`, `onCBQJobAttemptFinished`, `onCBQJobExecutionStarted`, and `onCBQJobExecutionExited`. See [Queue Observability](observability.md) for availability, payloads, statuses, worker-thread context, timeout handling, and observer diagnostics. These hooks do not change the contracts of the existing points above.
+The observation hooks added in 7.0.1 are `onCBQJobPublished`, `onCBQJobPublishException`, `onCBQJobAttemptScheduled`, `onCBQJobAttemptFinished`, `onCBQJobExecutionStarted`, and `onCBQJobExecutionExited`. See [Queue Observability](observability.md) for availability, payloads, statuses, worker-thread context, timeout handling, and observer diagnostics. These hooks do not change the contracts of the existing points above.
 
 ## JobPattern Annotation
 
