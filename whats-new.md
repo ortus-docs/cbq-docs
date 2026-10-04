@@ -1,5 +1,9 @@
 # What's New?
 
+## v7.0.1: queue observation hooks
+
+Add [publish-result and attempt observation hooks](observability.md) for tracing and operational telemetry. Each attempt carries an execution ID across worker and completion threads. Paired execution hooks support context restoration after exceptions and late timeout exits. New observer failures are diagnosed without replacing the queue outcome; existing hooks retain their behavior.
+
 ## v5.0.7
 
 Update `release` to use the new `push` method signature.
