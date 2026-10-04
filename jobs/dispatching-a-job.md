@@ -57,3 +57,7 @@ variables.interceptorService.announce( "onCBQJobAdded", {
     "connection" : connection
 } );
 ```
+
+## Observing publication (unreleased)
+
+`onCBQJobAdded` precedes the provider call and does not establish that the job was published. The upcoming `onCBQJobPublished` and `onCBQJobPublishException` hooks observe the provider result for single and bulk dispatch. See [Queue Observability](../observability.md#publishing) for their payloads, failure behavior, and provider acknowledgement boundary.

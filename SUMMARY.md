@@ -34,6 +34,7 @@
 
 * [cbq Model](cbq-model.md)
 * [Interceptors](interceptors.md)
+* [Queue Observability](observability.md)
 
 ## Other
 
