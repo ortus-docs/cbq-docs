@@ -17,6 +17,14 @@ cbq is installed via [ForgeBox](https://forgebox.io) with [CommandBox](https://w
 install cbq
 ```
 
+To stay on the v6 release line, install a version constraint:
+
+```shell
+box install cbq@^6.0.0
+```
+
+Installing cbq does not apply database migrations. Before starting workers or dispatching batches, apply the migrations for the tables you use. See the [Upgrade Guide](../upgrade-guide.md#v5-to-v6) and [DBProvider setup](../configuration/providers/dbprovider.md#jobs-table-structure).
+
 ## Load Java Libraries
 
 When using batches, cbq utilizes additional Java libraries included in the `lib/` folder. These need to be added to your Application's `javaSettings` in `Application.cfc`.
@@ -33,6 +41,8 @@ this.javaSettings = {
 {% hint style="info" %}
 Feel free to use mappings to point to the cbq path, if needed.
 {% endhint %}
+
+Append the cbq library path if your application already defines `javaSettings.loadPaths`, and restart the application after changing it. A `ClassNotFoundException` for `com.fasterxml.uuid.Generators` means the bundled UUID library is missing from the application's classpath; changing the Java version alone does not add it. Use a Java version supported by your CFML engine.
 
 ## Additional Provider Installation Steps
 

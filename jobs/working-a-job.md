@@ -83,7 +83,7 @@ You can dispatch other Jobs from your Job.  This can be different Jobs or even a
 To work a cbq job, you need a [defined Worker Pool in your cbq Config file.](../configuration/config-file/#newworkerpool) In order to work a Job, the Worker Pool must:
 
 1. Be working the same [connection](../configuration/config-file/worker-pool.md#forconnection) as the Job.
-2. Be working the same [queue](../configuration/config-file/worker-pool.md#onqueues) as the Job.
+2. Be working the same [queue](../configuration/config-file/worker-pool.md#onqueue) as the Job.
 3. Have at least one active worker (defined with [`setQuantity`](../configuration/config-file/worker-pool.md#setquantity)).
 
 If these requirements are not met, the job will stay in the queue storage, unable to get picked up.

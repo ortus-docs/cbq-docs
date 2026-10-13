@@ -1,6 +1,6 @@
 # Creating a Job
 
-After you define your job, you need to create an instance of your job and set the properties before you dispatch it onto your [Queue Connection](../configuration/config-file/#connection).  You can do this is a few different ways.
+After you define your job, you need to create an instance of your job and set the properties before you dispatch it onto your [Queue Connection](../configuration/config-file/queue-connection.md).  You can do this is a few different ways.
 
 ## Creating a Job Instance
 

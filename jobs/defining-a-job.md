@@ -1,6 +1,6 @@
 # Defining a Job
 
-A Job represents both the object to be serialized to a [Connection](../configuration/config-file/#connection) to eventually work as well as the code to execute when working a Job.
+A Job represents both the object to be serialized to a [Connection](../configuration/config-file/queue-connection.md) to eventually work as well as the code to execute when working a Job.
 
 ## Extending from AbstractJob
 
@@ -17,7 +17,7 @@ component
 
 ## Properties
 
-Defining properties on your job allow you to see at a glance what data your Job expects when constructing it.  These properties and their values will be serialized to a [Connection](../configuration/config-file/#connection) when dispatching a Job.
+Defining properties on your job allow you to see at a glance what data your Job expects when constructing it.  These properties and their values will be serialized to a [Connection](../configuration/config-file/queue-connection.md) when dispatching a Job.
 
 {% hint style="info" %}
 Defining the properties is not strictly necessary, but your future self will thank you when you try to remember what properties your job is using.
@@ -143,7 +143,7 @@ A Job can define a `before` or `after` method that will be called as part of the
 
 ### release
 
-A job can be manually released from inside a Job.  Releasing a Job sends it back to the queue and increments the attempt count.  An optional delay (in seconds) can be passed to `release`.
+A job can be manually released from inside a Job. Calling `release` requests that the provider send it back to the queue after the current execution. An optional delay (in seconds) can be passed to `release`. With DBProvider in cbq 6.0.2+, the execution has already consumed one attempt; releasing it does not add another. Manual releases still count toward `maxAttempts`; use `0` for unlimited attempts.
 
 ```cfscript
 component

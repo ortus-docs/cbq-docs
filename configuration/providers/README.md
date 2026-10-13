@@ -26,7 +26,7 @@ All Queue Providers extend the `AbstractQueueProvider` base component.  They mus
  */
 public any function push(
     required string queueName,
-    required AbstractJob job
+    required AbstractJob job,
     numeric delay = 0,
     numeric attempts = 0
 );

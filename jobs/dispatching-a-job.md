@@ -2,7 +2,7 @@
 
 ## Dispatching
 
-Creating a Job is all well and good, but the Job will not be executed until it is dispatched on to a [Queue Connection](../configuration/config-file/#connection).
+Creating a Job is all well and good, but the Job will not be executed until it is dispatched on to a [Queue Connection](../configuration/config-file/queue-connection.md).
 
 If you have a Job instance, you can dispatch it by calling the `dispatch` method.
 
@@ -10,8 +10,8 @@ If you have a Job instance, you can dispatch it by calling the `dispatch` method
 component {
 
     function index( event, rc, prc ) {
-        getInstance( "SendWelcomeEmailJob" );
-            .setEmail( "john@example.com" );
+        getInstance( "SendWelcomeEmailJob" )
+            .setEmail( "john@example.com" )
             .setGreeting( "Welcome!" )
             .dispatch();
     }

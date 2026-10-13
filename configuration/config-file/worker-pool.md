@@ -80,7 +80,7 @@ newWorkerPool( "default" )
 
 #### setQueue
 
-Alias for [onQueue](worker-pool.md#onqueues).
+Alias for [onQueue](worker-pool.md#onqueue).
 
 #### backoff
 

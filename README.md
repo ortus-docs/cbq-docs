@@ -1,5 +1,7 @@
 # Home
 
+This documentation covers **cbq 6.x**, through **6.0.2**. Start with [What's New?](whats-new.md) and the [Upgrade Guide](upgrade-guide.md) when moving from an earlier version.
+
 ## A protocol-based queueing system for ColdBox
 
 Queues allow you to push work to the background, schedule work to be done later, or even process work on many different machines.  It runs on a provider-based system allowing a unified API to talk with many different queue backends.
@@ -10,4 +12,3 @@ Queues allow you to push work to the background, schedule work to be done later,
 * [Walkthrough](getting-started/walkthrough.md)
 * CFCasts Series (Coming Soon)
 * API Docs
-

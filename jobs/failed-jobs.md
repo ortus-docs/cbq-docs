@@ -30,7 +30,7 @@ private void function afterJobException(
 This event method is fired when **Job** is marked as failed — when the Job has failed all attempts up to the configured `maxAttempts` or has been cancelled. The data includes the Job `id`, the `job` instance, the Worker `pool` instance, and the `exception`.
 
 ```cfscript
-private void function afterJobException(
+private void function afterJobFailed(
     required any id,
     AbstractJob job,
     WorkerPool pool,

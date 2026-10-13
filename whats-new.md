@@ -1,5 +1,27 @@
 # What's New?
 
+## v6.0.2
+
+The DBProvider counts attempts once per execution. Releasing or retrying a database job no longer consumes an extra attempt, so `maxAttempts` applies to actual executions.
+
+## v6.0.1
+
+Fixed PostgreSQL reservation queries so jobs are selected in the intended order before they are locked.
+
+## v6.0.0
+
+### Breaking Change
+
+Batch accounting now requires a `successfulJobs` column on the batch table. Apply `2000_01_01_000008_add_successfulJobs_to_cbq_batches_table.cfc` before starting the upgraded application, including when using a custom batch table. See the [v5 to v6 upgrade guide](upgrade-guide.md#v5-to-v6).
+
+Successful and failed jobs both reduce `pendingJobs`. The `onComplete` lifecycle job can therefore run when the final job fails, as well as when it succeeds. Batch names are optional; migration `2000_01_01_000009_make_cbq_batches_name_nullable.cfc` makes the name column nullable.
+
+## v5.0.8 and v5.0.9
+
+These releases introduced the batch-accounting work finalized in v6, along with DBProvider reservation and retry recovery fixes. v5.0.8 and v5.0.9 already require the `successfulJobs` column despite its patch version; follow the [v6 migration instructions](upgrade-guide.md#v5-to-v6) when upgrading from an earlier v5 release.
+
+Other fixes include composing delayed ColdBoxAsyncProvider execution correctly, accepting missing exception information in failed-job logs, and recovering orphaned database reservations whose `reservedBy` is set but `reservedDate` is null.
+
 ## v5.0.7
 
 Update `release` to use the new `push` method signature.
@@ -38,8 +60,8 @@ See the [Upgrade Guide](upgrade-guide.md#v4-to-v5) for more information.
 
 ### Other Changes
 
-* Allow jobs to be fully [cancelled](jobs/defining-a-job.md#manual) manually from inside the job, preventing further retries.
-* Added an `afterJobExpection` Provider-level event method to let providers act on any exception, not just the exception that marked the Job as fully failed.
+* Allow jobs to be fully [cancelled](jobs/defining-a-job.md#cancel) manually from inside the job, preventing further retries.
+* Added an `afterJobException` Provider-level event method to let providers act on any exception, not just the exception that marked the Job as fully failed.
 * A `providerContext` field is now available on `Job` instances.  This field should only be used in Providers.  It can be used to store any value the Provider needs when interacting with Jobs in later lifecycle methods.
 * When processing an `unload` event, cbq will call a `shutdown` method on all `Connection` instances and `WorkerPool` instances giving Providers a chance to cleanup any necessary code.
 * cbq will now start processing its configuration only after all modules have loaded (`afterAspectsLoad`).
