@@ -1,8 +1,53 @@
 # What's New?
 
-## v7.0.1: queue observation hooks
+## v7.0.2
 
-Add [publish-result and attempt observation hooks](observability.md) for tracing and operational telemetry. Each attempt carries an execution ID across worker and completion threads. Paired execution hooks support context restoration after exceptions and late timeout exits. New observer failures are diagnosed without replacing the queue outcome; existing hooks retain their behavior.
+Bulk dispatch now announces publication results for the final partial chunk as well as full chunks. A partial chunk continues to use a provider's `pushMany` API, including when only one job remains. See [Queue Observability](observability.md#publishing).
+
+## v7.0.1
+
+Added six observation hooks for publication results and worker attempts: `onCBQJobPublished`, `onCBQJobPublishException`, `onCBQJobAttemptScheduled`, `onCBQJobExecutionStarted`, `onCBQJobExecutionExited`, and `onCBQJobAttemptFinished`. Each attempt has an `executionId` for correlation across threads and retries. Exceptions from these observers are reported without changing queue outcomes. See [Queue Observability](observability.md).
+
+Use 7.0.2+ when observing bulk dispatch with `batchSize > 1`; 7.0.1 omits the publication-result hooks for the final partial chunk.
+
+## v7.0.0
+
+### Breaking Changes
+
+* Batch result accounting requires a nullable `processedJobIds` column. Under a row lock, the repository records each job ID once so repeated terminal callbacks do not reduce `pendingJobs` again or repeat lifecycle dispatch.
+* Persisted job attempts now use a bigint, allowing long-lived retries and manual releases to exceed the old tiny-integer limit.
+
+Apply migrations `2000_01_01_000010_widen_job_attempts.cfc` and `2000_01_01_000011_track_processed_batch_jobs.cfc` to the tables you use before starting the upgraded application. Custom batch repositories and providers overriding `forceFailJob` also need to follow the updated contracts. See the [v6 to v7 upgrade guide](upgrade-guide.md#v6-to-v7).
+
+### Features and Fixes
+
+* Configure database polling with the per-connection `pollIntervalMilliseconds` property. It defaults to `5000` and must be a positive integer. See [DBProvider](configuration/providers/dbprovider.md#pollintervalmilliseconds).
+* Opt in to chunked database inserts using `Dispatcher@cbq.bulkDispatch( batchSize = ... )`, from 1 to 100 jobs per chunk. Jobs retain individual queue rows and lifecycles. See [Bulk Dispatch](jobs/dispatching-a-job.md#bulk-dispatch).
+* Database callbacks are checked against their execution attempt and reservation state, so a late callback cannot overwrite a reclaimed attempt's queue row.
+* A database worker that lacks a job's WireBox mapping releases its reservation without consuming an attempt or marking the job failed, then continues polling. Route incompatible workers to separate queues.
+* Queue names and serialized payloads are bound as text, avoiding numeric inference for numeric-looking values.
+
+## v6.0.2
+
+The DBProvider counts attempts once per execution. Releasing or retrying a database job no longer consumes an extra attempt, so `maxAttempts` applies to actual executions.
+
+## v6.0.1
+
+Fixed PostgreSQL reservation queries so jobs are selected in the intended order before they are locked.
+
+## v6.0.0
+
+### Breaking Change
+
+Batch accounting now requires a `successfulJobs` column on the batch table. Apply `2000_01_01_000008_add_successfulJobs_to_cbq_batches_table.cfc` before starting the upgraded application, including when using a custom batch table. See the [v5 to v6 upgrade guide](upgrade-guide.md#v5-to-v6).
+
+Successful and failed jobs both reduce `pendingJobs`. The `onComplete` lifecycle job can therefore run when the final job fails, as well as when it succeeds. Batch names are optional; migration `2000_01_01_000009_make_cbq_batches_name_nullable.cfc` makes the name column nullable.
+
+## v5.0.8 and v5.0.9
+
+These releases introduced the batch-accounting work finalized in v6, along with DBProvider reservation and retry recovery fixes. v5.0.8 and v5.0.9 already require the `successfulJobs` column despite its patch version; follow the [v6 migration instructions](upgrade-guide.md#v5-to-v6) when upgrading from an earlier v5 release.
+
+Other fixes include composing delayed ColdBoxAsyncProvider execution correctly, accepting missing exception information in failed-job logs, and recovering orphaned database reservations whose `reservedBy` is set but `reservedDate` is null.
 
 ## v5.0.7
 
@@ -42,8 +87,8 @@ See the [Upgrade Guide](upgrade-guide.md#v4-to-v5) for more information.
 
 ### Other Changes
 
-* Allow jobs to be fully [cancelled](jobs/defining-a-job.md#manual) manually from inside the job, preventing further retries.
-* Added an `afterJobExpection` Provider-level event method to let providers act on any exception, not just the exception that marked the Job as fully failed.
+* Allow jobs to be fully [cancelled](jobs/defining-a-job.md#cancel) manually from inside the job, preventing further retries.
+* Added an `afterJobException` Provider-level event method to let providers act on any exception, not just the exception that marked the Job as fully failed.
 * A `providerContext` field is now available on `Job` instances.  This field should only be used in Providers.  It can be used to store any value the Provider needs when interacting with Jobs in later lifecycle methods.
 * When processing an `unload` event, cbq will call a `shutdown` method on all `Connection` instances and `WorkerPool` instances giving Providers a chance to cleanup any necessary code.
 * cbq will now start processing its configuration only after all modules have loaded (`afterAspectsLoad`).

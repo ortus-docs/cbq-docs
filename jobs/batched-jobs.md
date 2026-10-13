@@ -6,13 +6,17 @@ cbq allows for tracking jobs as part of a batch.  The main use case for batched 
 
 To utilize batches, you first need to set up a Batch repository.  Batches are tracked separate from jobs. cbq utilizes a database repository to track batches regardless of what provider your Job's connection uses.
 
-A database migration is provided in `resources/database/migrations/2000_01_01_000001_create_cbq_batches_table.cfc`. You can copy this to your own project to run via [cfmigrations](https://forgebox.io/view/cfmigrations) or you can reference the migration or SQL scripts [below](batched-jobs.md#migrations-and-sql-scripts).
+Copy the batch-table migrations from `resources/database/migrations` to your own project and run them in filename order with [cfmigrations](https://forgebox.io/view/cfmigrations). The initial `2000_01_01_000001_create_cbq_batches_table.cfc` migration needs the later batch migrations described in [Result Accounting](#result-accounting). Alternatively, create the final structure using the migration or SQL scripts [below](batched-jobs.md#migrations-and-sql-scripts).
 
-You can customize the batch repository using the `batchRepositoryProperties` of cbq's `moduleSettings`.  This is a struct with two properties you can set:
+You can customize the batch repository using the `batchRepositoryProperties` of cbq's `moduleSettings`.  This is a struct with the following properties:
 
 #### tableName
 
 This defaults to `cbq_batches`.  You can set this to any unique table name in your datasource.
+
+#### datasource
+
+The datasource used for the batch table. This overrides a datasource supplied in `queryOptions`.
 
 #### queryOptions
 
@@ -43,7 +47,7 @@ batch
     ] );
 ```
 
-The primary use case of batches is to dispatch lifecycle jobs when the batch has completed and if the batch completed successfully or completed with failures.  These jobs can be configured using the `then`, `catch`, and `finally` methods.
+The primary use case of batches is to dispatch lifecycle jobs when the batch has completed and if the batch completed successfully or completed with failures.  These jobs can be configured using the `then`, `onFailure`, and `onComplete` methods. Use the latter names for Adobe ColdFusion compatibility; `catch` and `finally` are deprecated aliases on Lucee and BoxLang.
 
 ### then
 
@@ -114,26 +118,48 @@ Dispatches a PendingBatch and all the Jobs it contains.
 
 **Return:** A `Batch` instance created from this `PendingBatch`.
 
+## Result Accounting
+
+cbq 6 requires migration `2000_01_01_000008_add_successfulJobs_to_cbq_batches_table.cfc` for `successfulJobs`, and migration `2000_01_01_000009_make_cbq_batches_name_nullable.cfc` makes batch names optional. Apply them to the configured batch table even when your jobs use SyncProvider or ColdBoxAsyncProvider. cbq 7 additionally requires `2000_01_01_000011_track_processed_batch_jobs.cfc` for `processedJobIds`. See the [Upgrade Guide](../upgrade-guide.md#v6-to-v7).
+
+`totalJobs` counts jobs added to the batch. Each successful result increments `successfulJobs`; each terminal failure increments `failedJobs` and adds its ID to `failedJobIds`. Both outcomes decrement `pendingJobs`. A retry is not a terminal result. The `onComplete` job can run when the final pending job fails, and an exception dispatching a `then` or `onFailure` job is logged so the completion path can continue.
+
+Starting in v7, the repository uses a row lock and a `processedJobIds` JSON array to record one terminal result per job ID. Repeated success or failure callbacks do not consume another pending job or repeat lifecycle dispatch. Existing failed IDs are also protected. Successful IDs from before the migration cannot be reconstructed; drain active batches before upgrading if they might receive duplicate callbacks. This accounting does not make the job's external side effects execute exactly once.
+
 ## Interacting with Batches
 
+Reload a batch from its repository to read current counts; a previously returned `Batch` instance is a snapshot.
 
+```cfscript
+var currentBatch = getInstance( "DBBatchRepository@cbq" ).find( batch.getId() );
+var counts = {
+    total: currentBatch.getTotalJobs(),
+    pending: currentBatch.getPendingJobs(),
+    successful: currentBatch.getSuccessfulJobs(),
+    failed: currentBatch.getFailedJobs()
+};
+```
 
 ## Migrations and SQL Scripts
+
+The examples below show the batch table after the v7 migrations. For a fresh installation, create this final structure or apply the supplied migrations in filename order. For an existing table, use the upgrade migrations instead of recreating it. Dates are Unix timestamps, matching the repository's stored values.
 
 ### cfmigrations
 
 ```cfscript
 schema.create( "cbq_batches", function ( t ) {
     t.string( "id" ).primaryKey();
-    t.string( "name" );
+    t.string( "name" ).nullable();
     t.unsignedInteger( "totalJobs" );
     t.unsignedInteger( "pendingJobs" );
+    t.unsignedInteger( "successfulJobs" ).default( 0 );
     t.unsignedInteger( "failedJobs" );
     t.text( "failedJobIds" ); // JSON column
+    t.longText( "processedJobIds" ).nullable(); // JSON column
     t.text( "options" ).nullable(); // JSON column
-    t.datetime( "createdDate" );
-    t.datetime( "cancelledDate" ).nullable();
-    t.datetime( "completedDate" ).nullable();
+    t.unsignedInteger( "createdDate" );
+    t.unsignedInteger( "cancelledDate" ).nullable();
+    t.unsignedInteger( "completedDate" ).nullable();
 } );
 ```
 
@@ -142,15 +168,17 @@ schema.create( "cbq_batches", function ( t ) {
 ```sql
 CREATE TABLE `cbq_batches` (
     `id` VARCHAR(255) NOT NULL,
-    `name` VARCHAR(255) NOT NULL,
+    `name` VARCHAR(255),
     `totalJobs` INTEGER UNSIGNED NOT NULL,
     `pendingJobs` INTEGER UNSIGNED NOT NULL,
+    `successfulJobs` INTEGER UNSIGNED NOT NULL DEFAULT 0,
     `failedJobs` INTEGER UNSIGNED NOT NULL,
     `failedJobIds` TEXT NOT NULL,
+    `processedJobIds` LONGTEXT,
     `options` TEXT,
-    `createdDate` DATETIME NOT NULL,
-    `cancelledDate` DATETIME,
-    `completedDate` DATETIME,
+    `createdDate` INTEGER UNSIGNED NOT NULL,
+    `cancelledDate` INTEGER UNSIGNED,
+    `completedDate` INTEGER UNSIGNED,
     CONSTRAINT `pk_cbq_batches_id` PRIMARY KEY (`id`)
 )
 ```
@@ -160,15 +188,17 @@ CREATE TABLE `cbq_batches` (
 ```sql
 CREATE TABLE [cbq_batches] (
     [id] VARCHAR(255) NOT NULL,
-    [name] VARCHAR(255) NOT NULL,
+    [name] VARCHAR(255),
     [totalJobs] INTEGER NOT NULL,
     [pendingJobs] INTEGER NOT NULL,
+    [successfulJobs] INTEGER NOT NULL DEFAULT 0,
     [failedJobs] INTEGER NOT NULL,
     [failedJobIds] VARCHAR(MAX) NOT NULL,
+    [processedJobIds] VARCHAR(MAX),
     [options] VARCHAR(MAX),
-    [createdDate] DATETIME2 NOT NULL,
-    [cancelledDate] DATETIME2,
-    [completedDate] DATETIME2,
+    [createdDate] INTEGER NOT NULL,
+    [cancelledDate] INTEGER,
+    [completedDate] INTEGER,
     CONSTRAINT [pk_cbq_batches_id] PRIMARY KEY ([id])
 )
 ```
@@ -178,15 +208,17 @@ CREATE TABLE [cbq_batches] (
 ```sql
 CREATE TABLE "cbq_batches" (
     "id" VARCHAR(255) NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(255),
     "totalJobs" INTEGER NOT NULL,
     "pendingJobs" INTEGER NOT NULL,
+    "successfulJobs" INTEGER NOT NULL DEFAULT 0,
     "failedJobs" INTEGER NOT NULL,
     "failedJobIds" TEXT NOT NULL,
+    "processedJobIds" TEXT,
     "options" TEXT,
-    "createdDate" TIMESTAMP NOT NULL,
-    "cancelledDate" TIMESTAMP,
-    "completedDate" TIMESTAMP,
+    "createdDate" INTEGER NOT NULL,
+    "cancelledDate" INTEGER,
+    "completedDate" INTEGER,
     CONSTRAINT "pk_cbq_batches_id" PRIMARY KEY ("id")
 )
 ```
@@ -196,15 +228,17 @@ CREATE TABLE "cbq_batches" (
 ```sql
 CREATE TABLE "CBQ_BATCHES" (
     "ID" VARCHAR2(255) NOT NULL,
-    "NAME" VARCHAR2(255) NOT NULL,
+    "NAME" VARCHAR2(255),
     "TOTALJOBS" NUMBER(10, 0) NOT NULL,
     "PENDINGJOBS" NUMBER(10, 0) NOT NULL,
+    "SUCCESSFULJOBS" NUMBER(10, 0) DEFAULT 0 NOT NULL,
     "FAILEDJOBS" NUMBER(10, 0) NOT NULL,
     "FAILEDJOBIDS" CLOB NOT NULL,
+    "PROCESSEDJOBIDS" CLOB,
     "OPTIONS" CLOB,
-    "CREATEDDATE" DATE NOT NULL,
-    "CANCELLEDDATE" DATE,
-    "COMPLETEDDATE" DATE,
+    "CREATEDDATE" NUMBER(10, 0) NOT NULL,
+    "CANCELLEDDATE" NUMBER(10, 0),
+    "COMPLETEDDATE" NUMBER(10, 0),
     CONSTRAINT "PK_CBQ_BATCHES_ID" PRIMARY KEY ("ID")
 )
 ```
@@ -214,15 +248,17 @@ CREATE TABLE "CBQ_BATCHES" (
 ```sql
 CREATE TABLE "cbq_batches" (
     "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
+    "name" TEXT,
     "totalJobs" INTEGER NOT NULL,
     "pendingJobs" INTEGER NOT NULL,
+    "successfulJobs" INTEGER NOT NULL DEFAULT 0,
     "failedJobs" INTEGER NOT NULL,
     "failedJobIds" TEXT NOT NULL,
+    "processedJobIds" TEXT,
     "options" TEXT,
-    "createdDate" DATETIME NOT NULL,
-    "cancelledDate" DATETIME,
-    "completedDate" DATETIME,
+    "createdDate" INTEGER NOT NULL,
+    "cancelledDate" INTEGER,
+    "completedDate" INTEGER,
     PRIMARY KEY ("id")
 )
 ```

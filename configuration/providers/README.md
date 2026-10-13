@@ -26,7 +26,7 @@ All Queue Providers extend the `AbstractQueueProvider` base component.  They mus
  */
 public any function push(
     required string queueName,
-    required AbstractJob job
+    required AbstractJob job,
     numeric delay = 0,
     numeric attempts = 0
 );
@@ -49,3 +49,11 @@ public function function startWorker( required WorkerPool pool );
  */
 public any function listen( required WorkerPool pool );
 ```
+
+### Optional Bulk Publishing
+
+Starting in v7, a provider may implement `public any function pushMany( required array entries )` for efficient enqueueing. Each entry contains the normal `push` arguments: `queueName`, `job`, and optionally `delay` and `attempts`. The connection falls back to calling `push` for each entry when this method is absent.
+
+Use the same serialization, routing, datasource, and query options as `push`. DBProvider bounds inserts to 100 rows per statement, including direct calls to `pushMany`. In 7.0.2+, the final partial chunk also uses `pushMany`, even if it contains only one entry. The caller controls transaction boundaries; a provider that partially publishes and then throws must not imply that the entire chunk was rolled back.
+
+See [Bulk Dispatch](../../jobs/dispatching-a-job.md#bulk-dispatch) for event ordering and [Queue Observability](../../observability.md#publishing) for publication-result hooks.
