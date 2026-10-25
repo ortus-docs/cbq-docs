@@ -1,5 +1,9 @@
 # What's New?
 
+## v7.1.0
+
+Added `QueueHealthAdapter@cbq` for read-only queue and worker snapshots. Select a connection for backlog without local workers, or a worker pool for activity plus its queues. The database provider reads depth, age and reservation state using its own table, datasource and query options. cbq does not schedule collection or require Sentry. See [Queue Health Snapshots](queue-health.md).
+
 ## v7.0.2
 
 Bulk dispatch now announces publication results for the final partial chunk as well as full chunks. A partial chunk continues to use a provider's `pushMany` API, including when only one job remains. See [Queue Observability](observability.md#publishing).

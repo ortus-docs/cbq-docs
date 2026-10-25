@@ -6,6 +6,8 @@ These hooks were introduced in [cbq 7.0.1](https://github.com/coldbox-modules/cb
 
 cbq exposes observation points for publishing and individual processing attempts. They let an application record queue timings, correlate retries, and establish tracing context on the actual worker. cbq does not start a tracing client or persist trace headers automatically; those responsibilities belong to your integration.
 
+For backlog, queue age and supported worker activity in cbq 7.1.0+, use [Queue Health Snapshots](queue-health.md). Snapshots are read-only samples, separate from the job lifecycle hooks below.
+
 ## Publishing
 
 `onCBQJobAdded` runs before the provider is called. Use it to attach any serializable trace metadata your application needs, but do not treat it as confirmation that enqueueing succeeded.

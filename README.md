@@ -1,6 +1,6 @@
 # Home
 
-This documentation covers **cbq 7.x**, through **7.0.2**. Start with [What's New?](whats-new.md) and the [Upgrade Guide](upgrade-guide.md) when moving from an earlier version.
+This documentation covers **cbq 7.x**, through **7.1.0**. Start with [What's New?](whats-new.md) and the [Upgrade Guide](upgrade-guide.md) when moving from an earlier version.
 
 ## A protocol-based queueing system for ColdBox
 
