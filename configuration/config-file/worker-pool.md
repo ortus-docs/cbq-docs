@@ -1,6 +1,6 @@
 # Worker Pool
 
-A Queue Connection is defined inside your cbq config file using a `QueueConnectionDefinition` builder component.  You can create one of these builder components using the [`newConnection`](./#newconnection) method.
+A Worker Pool is defined inside your cbq config file using a `WorkerPoolDefinition` builder component. Create one with [`newWorkerPool`](./#newworkerpool), select its connection, and configure the queues and quantity of workers it should run.
 
 ### WorkerPoolDefinition Methods
 

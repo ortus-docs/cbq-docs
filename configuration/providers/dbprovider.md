@@ -102,3 +102,16 @@ Use separate queues and explicitly configure each worker pool's queues when work
 ### Bulk Inserts
 
 Use [Bulk Dispatch](../../jobs/dispatching-a-job.md#bulk-dispatch) with `batchSize` from 1 to 100 to opt in to chunked inserts. DBProvider also exposes `pushMany( entries )` and bounds direct calls to 100 rows per insert. It uses the configured table, datasource, and query options. Queue names and serialized payloads are bound as text, even when they look numeric. Each job remains a separate queue row, and the caller owns transaction boundaries.
+
+### Queue Health Snapshots
+
+In cbq 7.1.0+, `getQueueHealth(queue)` reads pending depth and age, runnable/delayed work and reserved/stale leases. It uses this provider instance's configured `tableName`, datasource and `queryOptions`, including any query timeout. It does not reserve jobs or start workers.
+
+```cfscript
+provider = wirebox.getInstance( "Config@cbq" ).getConnection( "db" ).getProvider();
+snapshot = provider.getQueueHealth( "mail" );
+```
+
+Pass a queue name, an array of names, or `"*"` for all queues. Selections are bound parameters. Completed/failed jobs are excluded; pending depth is runnable plus delayed work and excludes reserved jobs. Unsupported retry/exhaustion counts are not invented.
+
+Use [`QueueHealthAdapter@cbq`](../../queue-health.md) to select the registered connection directly, combine the snapshot with worker-pool activity, or feed a monitoring collector. Database settings stay on the connection/provider.
